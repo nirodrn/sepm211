@@ -9,16 +9,18 @@ const database = getDatabase(app);
 const REQUEST_TYPES = {
   DISTRIBUTOR: 'distributorReqs',
   DIRECT_REP: 'drreqs',
-  DIRECT_SHOP: 'dsreqs'
+  DIRECT_SHOP: 'dsreqs',
+  SHOWROOM: 'showroomreqs' // Added for Direct Showroom Manager
 };
 
 export const getDistributorRequests = async () => {
   try {
     // Fetch all types of requests
-    const [distributorSnapshot, drSnapshot, dsSnapshot] = await Promise.all([
+    const [distributorSnapshot, drSnapshot, dsSnapshot, showroomSnapshot] = await Promise.all([
       get(ref(database, REQUEST_TYPES.DISTRIBUTOR)),
       get(ref(database, REQUEST_TYPES.DIRECT_REP)),
-      get(ref(database, REQUEST_TYPES.DIRECT_SHOP))
+      get(ref(database, REQUEST_TYPES.DIRECT_SHOP)),
+      get(ref(database, REQUEST_TYPES.SHOWROOM)) // Added for Direct Showroom Manager
     ]);
     
     const requests = [];
@@ -57,7 +59,6 @@ export const getDistributorRequests = async () => {
           ...data,
           requestType: 'direct_shop',
           priority: data.urgent ? 'urgent' : 'normal',
-          // Normalize structure to match other request types
           items: {
             [data.product]: {
               name: data.product,
@@ -67,6 +68,19 @@ export const getDistributorRequests = async () => {
           createdAt: new Date(data.date).getTime(),
           updatedAt: new Date(data.date).getTime(),
           requestedByRole: 'DirectShop'
+        });
+      });
+    }
+
+    // Add direct showroom requests
+    if (showroomSnapshot.exists()) {
+      showroomSnapshot.forEach((child) => {
+        const data = child.val();
+        requests.push({ 
+          ...data,
+          requestType: 'showroom',
+          items: data.items || {},
+          priority: data.priority || 'normal'
         });
       });
     }
@@ -86,6 +100,8 @@ export const approveRequest = async (requestId, requestData) => {
       requestPath = REQUEST_TYPES.DIRECT_REP;
     } else if (requestData.requestedByRole === 'DirectShop' || requestData.requestType === 'direct_shop') {
       requestPath = REQUEST_TYPES.DIRECT_SHOP;
+    } else if (requestData.requestedByRole === 'DirectShowroomManager' || requestData.requestType === 'showroom') {
+      requestPath = REQUEST_TYPES.SHOWROOM;
     } else {
       requestPath = REQUEST_TYPES.DISTRIBUTOR;
     }
@@ -109,6 +125,7 @@ export const approveRequest = async (requestId, requestData) => {
       requesterRole: requestData.requestedByRole,
       requestType: requestData.requestedByRole === 'DirectShop' || requestData.requestType === 'direct_shop' ? 'direct_shop' : 
                   requestData.requestedByRole === 'DirectRepresentative' || requestData.requestType === 'direct_representative' ? 'direct_representative' : 
+                  requestData.requestedByRole === 'DirectShowroomManager' || requestData.requestType === 'showroom' ? 'showroom' : 
                   'distributor',
       priority: requestData.priority,
       notes: requestData.notes,
@@ -119,6 +136,7 @@ export const approveRequest = async (requestId, requestData) => {
       totalQuantity: Object.values(requestData.items).reduce((sum, item) => sum + item.qty, 0),
       type: requestData.requestedByRole === 'DirectShop' || requestData.requestType === 'direct_shop' ? 'direct_shop_sale' :
             requestData.requestedByRole === 'DirectRepresentative' || requestData.requestType === 'direct_representative' ? 'direct_rep_sale' :
+            requestData.requestedByRole === 'DirectShowroomManager' || requestData.requestType === 'showroom' ? 'showroom_sale' :
             'distributor_sale',
       isDispatched: false,
       isCompletedByFG: false,
@@ -180,6 +198,7 @@ const notifyFGStoreOfApprovedRequest = async (requestId, requestData) => {
     console.error('Failed to notify FG store:', error);
   }
 };
+
 export const rejectRequest = async (requestId, requestData) => {
   try {
     // Determine request path based on request type
@@ -188,6 +207,8 @@ export const rejectRequest = async (requestId, requestData) => {
       requestPath = REQUEST_TYPES.DIRECT_REP;
     } else if (requestData.requestedByRole === 'DirectShop' || requestData.requestType === 'direct_shop') {
       requestPath = REQUEST_TYPES.DIRECT_SHOP;
+    } else if (requestData.requestedByRole === 'DirectShowroomManager' || requestData.requestType === 'showroom') {
+      requestPath = REQUEST_TYPES.SHOWROOM;
     } else {
       requestPath = REQUEST_TYPES.DISTRIBUTOR;
     }
