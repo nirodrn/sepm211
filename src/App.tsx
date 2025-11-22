@@ -130,6 +130,7 @@ import ExternalDispatches from './pages/FinishedGoodsStore/ExternalDispatches';
 import PriceHistory from './pages/FinishedGoodsStore/PriceHistory';
 import ApprovedSalesRequests from './pages/FinishedGoodsStore/ApprovedSalesRequests';
 import DispatchTracking from './pages/FinishedGoodsStore/DispatchTracking';
+import AddProductsAndPricing from './pages/FinishedGoodsStore/AddProductsAndPricing';
 
 // Raw Material Request Pages
 import RawMaterialRequestList from './pages/WarehouseOperations/RawMaterials/RequestList';
@@ -439,6 +440,7 @@ function App() {
                   <Route path="/finished-goods/claim-dispatches" element={<ProtectedRoute pagePath="/finished-goods/claim-dispatches"><ClaimDispatches /></ProtectedRoute>} />
                   <Route path="/finished-goods/direct-shop-requests" element={<ProtectedRoute pagePath="/finished-goods/direct-shop-requests"><DirectShopRequestsFG /></ProtectedRoute>} />
                   <Route path="/finished-goods/pricing" element={<ProtectedRoute pagePath="/finished-goods/pricing"><ProductPricing /></ProtectedRoute>} />
+                  <Route path="/finished-goods/add-products-pricing" element={<ProtectedRoute pagePath="/finished-goods/add-products-pricing"><AddProductsAndPricing /></ProtectedRoute>} />
                   <Route path="/finished-goods/external-dispatches" element={<ProtectedRoute pagePath="/finished-goods/external-dispatches"><ExternalDispatches /></ProtectedRoute>} />
                   <Route path="/finished-goods/price-history" element={<ProtectedRoute pagePath="/finished-goods/price-history"><PriceHistory /></ProtectedRoute>} />
                   <Route path="/finished-goods/dispatch-tracking" element={<ProtectedRoute pagePath="/finished-goods/dispatch-tracking"><DispatchTracking /></ProtectedRoute>} />

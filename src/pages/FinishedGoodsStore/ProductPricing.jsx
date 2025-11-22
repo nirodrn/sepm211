@@ -221,7 +221,13 @@ const ProductPricing = () => {
     try {
       const updates = [];
       
-      for (const product of sortedAndFilteredProducts) {
+      // Get products without pricing from the current filtered products
+      const productsToUpdate = products.filter(product => {
+        const productPricing = getProductPricing(product.productId, product.variantName);
+        return !productPricing || !productPricing.currentPrice;
+      });
+      
+      for (const product of productsToUpdate) {
         const currentPricing = getProductPricing(product.productId, product.variantName);
         if (!currentPricing) {
           // Set default pricing for products without pricing
@@ -621,6 +627,13 @@ const ProductPricing = () => {
             <p className="text-gray-600">Manage product prices and track pricing history</p>
           </div>
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate('/finished-goods/add-products-pricing')}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Products & Pricing</span>
+            </button>
             {productsWithoutPricing.length > 0 && (
               <button
                 onClick={handleBulkPriceUpdate}

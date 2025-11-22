@@ -216,36 +216,53 @@ export const fgStoreService = {
         });
       } else {
         // Create new inventory entry
-        await setData(`finishedGoodsInventory/${inventoryKey}`, {
+        const newInventoryData = {
           productId: inventoryData.productId,
           productName: inventoryData.productName,
           batchNumber: inventoryData.batchNumber,
           quantity: Number(inventoryData.quantity) || 0,
           unit: inventoryData.unit,
           qualityGrade: inventoryData.qualityGrade,
-          expiryDate: inventoryData.expiryDate,
+          expiryDate: inventoryData.expiryDate || null,
           releaseCode: inventoryData.releaseCode,
           location: inventoryData.location,
-          receivedFrom: inventoryData.receivedFrom,
-          dispatchType: inventoryData.dispatchType,
-          dispatchId: inventoryData.dispatchId,
+          receivedFrom: inventoryData.receivedFrom || 'manual_entry',
           createdAt: Date.now(),
           createdBy: currentUser?.uid
-        });
+        };
+        
+        // Only include optional fields if they have values
+        if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
+          newInventoryData.dispatchType = inventoryData.dispatchType;
+        }
+        if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
+          newInventoryData.dispatchId = inventoryData.dispatchId;
+        }
+        
+        await setData(`finishedGoodsInventory/${inventoryKey}`, newInventoryData);
       }
       
       // Record inventory movement
-      await this.recordInventoryMovement({
+      const movementData = {
         productId: inventoryData.productId,
         batchNumber: inventoryData.batchNumber,
         type: 'in',
         quantity: Number(inventoryData.quantity) || 0,
-        reason: `Received from Packing Area - Release Code: ${inventoryData.releaseCode}`,
+        reason: inventoryData.receivedFrom === 'manual_entry' 
+          ? `Manual entry - Release Code: ${inventoryData.releaseCode}`
+          : `Received from Packing Area - Release Code: ${inventoryData.releaseCode}`,
         location: inventoryData.location,
-        releaseCode: inventoryData.releaseCode,
-        dispatchId: inventoryData.dispatchId,
-        dispatchType: inventoryData.dispatchType
-      });
+        releaseCode: inventoryData.releaseCode
+      };
+      
+      if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
+        movementData.dispatchId = inventoryData.dispatchId;
+      }
+      if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
+        movementData.dispatchType = inventoryData.dispatchType;
+      }
+      
+      await this.recordInventoryMovement(movementData);
       
     } catch (error) {
       throw new Error(`Failed to add to inventory: ${error.message}`);
@@ -274,7 +291,7 @@ export const fgStoreService = {
         });
       } else {
         // Create new packaged inventory entry
-        await setData(`finishedGoodsPackagedInventory/${inventoryKey}`, {
+        const newInventoryData = {
           productId: inventoryData.productId,
           productName: inventoryData.productName,
           variantName: inventoryData.variantName,
@@ -283,29 +300,47 @@ export const fgStoreService = {
           variantSize: inventoryData.variantSize,
           variantUnit: inventoryData.variantUnit,
           qualityGrade: inventoryData.qualityGrade,
-          expiryDate: inventoryData.expiryDate,
+          expiryDate: inventoryData.expiryDate || null,
           releaseCode: inventoryData.releaseCode,
           location: inventoryData.location,
-          receivedFrom: inventoryData.receivedFrom,
-          dispatchType: inventoryData.dispatchType,
-          dispatchId: inventoryData.dispatchId,
+          receivedFrom: inventoryData.receivedFrom || 'manual_entry',
           createdAt: Date.now(),
           createdBy: currentUser?.uid
-        });
+        };
+        
+        // Only include optional fields if they have values
+        if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
+          newInventoryData.dispatchType = inventoryData.dispatchType;
+        }
+        if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
+          newInventoryData.dispatchId = inventoryData.dispatchId;
+        }
+        
+        await setData(`finishedGoodsPackagedInventory/${inventoryKey}`, newInventoryData);
       }
       
       // Record packaged inventory movement
-      await this.recordPackagedInventoryMovement({
+      const movementData = {
         productId: inventoryData.productId,
         variantName: inventoryData.variantName,
         batchNumber: inventoryData.batchNumber,
         type: 'in',
         units: Number(inventoryData.unitsReceived) || 0,
-        reason: `Received packaged units from Packing Area - Release Code: ${inventoryData.releaseCode}`,
+        reason: inventoryData.receivedFrom === 'manual_entry'
+          ? `Manual entry - Release Code: ${inventoryData.releaseCode}`
+          : `Received packaged units from Packing Area - Release Code: ${inventoryData.releaseCode}`,
         location: inventoryData.location,
-        releaseCode: inventoryData.releaseCode,
-        dispatchId: inventoryData.dispatchId
-      });
+        releaseCode: inventoryData.releaseCode
+      };
+      
+      if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
+        movementData.dispatchId = inventoryData.dispatchId;
+      }
+      if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
+        movementData.dispatchType = inventoryData.dispatchType;
+      }
+      
+      await this.recordPackagedInventoryMovement(movementData);
       
     } catch (error) {
       throw new Error(`Failed to add packaged units to inventory: ${error.message}`);
