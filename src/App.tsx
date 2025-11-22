@@ -131,6 +131,15 @@ import PriceHistory from './pages/FinishedGoodsStore/PriceHistory';
 import ApprovedSalesRequests from './pages/FinishedGoodsStore/ApprovedSalesRequests';
 import DispatchTracking from './pages/FinishedGoodsStore/DispatchTracking';
 import AddProductsAndPricing from './pages/FinishedGoodsStore/AddProductsAndPricing';
+import ExpiryManagement from './pages/FinishedGoodsStore/ExpiryManagement';
+import RecipientAnalytics from './pages/FinishedGoodsStore/RecipientAnalytics';
+import StockMovements from './pages/FinishedGoodsStore/StockMovements';
+import DispatchReports from './pages/FinishedGoodsStore/DispatchReports';
+import LocationManagement from './pages/FinishedGoodsStore/LocationManagement';
+
+// ... existing imports ...
+
+
 
 // Raw Material Request Pages
 import RawMaterialRequestList from './pages/WarehouseOperations/RawMaterials/RequestList';
@@ -177,14 +186,14 @@ const ProtectedRoute = ({ children, requiredRoles = [], pagePath = null }) => {
   if (hasRole(['Admin'])) {
     return children;
   }
-  
+
   // For non-Admin users, check PCS permissions first
   if (pagePath) {
     // If user has PCS permission for this page, allow access regardless of role
     if (hasPagePermission(pagePath)) {
       return children;
     }
-    
+
     // If no PCS permission, deny access
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -210,7 +219,7 @@ const ProtectedRoute = ({ children, requiredRoles = [], pagePath = null }) => {
       </div>
     );
   }
-  
+
   // For routes without pagePath, fall back to role-based permissions
   if (requiredRoles.length > 0 && !hasRole(requiredRoles)) {
     return (
@@ -289,17 +298,17 @@ function App() {
               <Navbar />
               <main className="flex-1">
                 <Routes>
-                  <Route 
-                    path="/dashboard" 
+                  <Route
+                    path="/dashboard"
                     element={
                       <ProtectedRoute pagePath="/dashboard">
                         <DashboardRouter />
                       </ProtectedRoute>
-                    } 
+                    }
                   />
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-                  
+
                   {/* Placeholder routes - will be implemented later */}
                   <Route path="/admin/users" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/users"><UserList /></ProtectedRoute>} />
                   <Route path="/admin/users/add" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/users/add"><AddUser /></ProtectedRoute>} />
@@ -310,43 +319,43 @@ function App() {
                   <Route path="/admin/direct-showrooms" element={<ProtectedRoute requiredRoles={['Admin', 'MainDirector']} pagePath="/admin/direct-showrooms"><DirectShowroomsList /></ProtectedRoute>} />
                   <Route path="/admin/direct-showrooms/add" element={<ProtectedRoute requiredRoles={['Admin', 'MainDirector']} pagePath="/admin/direct-showrooms/add"><AddEditShowroom /></ProtectedRoute>} />
                   <Route path="/admin/direct-showrooms/edit/:id" element={<ProtectedRoute requiredRoles={['Admin', 'MainDirector']} pagePath="/admin/direct-showrooms/add"><AddEditShowroom /></ProtectedRoute>} />
-                  
+
                   {/* PCS Route */}
                   <Route path="/admin/pcs" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/pcs"><PermissionControl /></ProtectedRoute>} />
                   <Route path="/admin/pcs/sales-history" element={<ProtectedRoute requiredRoles={['MainDirector', 'HeadOfOperations', 'Admin']} pagePath="/admin/pcs/sales-history"><SalesApprovalHistory /></ProtectedRoute>} />
-                  
+
                   {/* Admin Supplier Management Routes */}
                   <Route path="/admin/suppliers" element={<ProtectedRoute requiredRoles={['Admin', 'ReadOnlyAdmin']} pagePath="/admin/suppliers"><SupplierList /></ProtectedRoute>} />
                   <Route path="/admin/suppliers/add" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/suppliers/add"><AddSupplier /></ProtectedRoute>} />
                   <Route path="/admin/suppliers/edit/:id" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/suppliers/add"><AddSupplier /></ProtectedRoute>} />
                   <Route path="/admin/suppliers/:id" element={<ProtectedRoute requiredRoles={['Admin', 'ReadOnlyAdmin']} pagePath="/admin/suppliers"><SupplierDetail /></ProtectedRoute>} />
-                  
+
                   {/* Admin Product Management Routes */}
                   <Route path="/admin/products" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/products"><ProductList /></ProtectedRoute>} />
                   <Route path="/admin/products/edit/:id" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/products"><EditProduct /></ProtectedRoute>} />
-                  
+
                   {/* Admin Material Management Routes */}
                   <Route path="/admin/materials" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/materials"><MaterialList /></ProtectedRoute>} />
                   <Route path="/admin/materials/edit/:id" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/materials"><EditMaterial /></ProtectedRoute>} />
-                  
+
                   {/* Admin System Override Routes */}
                   <Route path="/admin/system/data-override" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/system/data-override"><DataOverride /></ProtectedRoute>} />
-                  
+
                   {/* Admin Data Entry Routes */}
                   <Route path="/admin/data-entry" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/data-entry"><DataEntryDashboard /></ProtectedRoute>} />
                   <Route path="/admin/data-entry/add-product" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/data-entry/add-product"><AddProduct /></ProtectedRoute>} />
                   <Route path="/admin/data-entry/add-material" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/data-entry/add-material"><AddMaterial /></ProtectedRoute>} />
                   <Route path="/admin/data-entry/material-types" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/data-entry/material-types"><MaterialTypes /></ProtectedRoute>} />
-                  
+
                   {/* Admin Reports Routes */}
                   <Route path="/admin/reports/supplier-performance" element={<ProtectedRoute requiredRoles={['Admin', 'MainDirector']} pagePath="/admin/reports/supplier-performance"><SupplierPerformance /></ProtectedRoute>} />
                   <Route path="/admin/reports/stock-analysis" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/reports/stock-analysis"><StockAnalysis /></ProtectedRoute>} />
                   <Route path="/admin/reports/sales-performance" element={<ProtectedRoute requiredRoles={['Admin']} pagePath="/admin/reports/sales-performance"><SalesPerformance /></ProtectedRoute>} />
                   <Route path="/admin/reports/packing-material-requests" element={<ProtectedRoute requiredRoles={['Admin', 'HeadOfOperations', 'MainDirector']} pagePath="/admin/reports/packing-material-requests"><PackingMaterialRequestStatus /></ProtectedRoute>} />
-                  
+
                   {/* Direct Shop Request Routes */}
                   <Route path="/direct-shop-requests" element={<ProtectedRoute requiredRoles={['MainDirector']} pagePath="/direct-shop-requests"><DirectShopRequestsMD /></ProtectedRoute>} />
-                  
+
                   <Route path="/admin/*" element={<ProtectedRoute requiredRoles={['Admin']}><div className="p-6">Other admin sections coming soon...</div></ProtectedRoute>} />
                   <Route path="/warehouse/*" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']}><div className="p-6">Warehouse section coming soon...</div></ProtectedRoute>} />
                   <Route path="/warehouse/raw-materials" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/raw-materials"><RawMaterialsList /></ProtectedRoute>} />
@@ -356,55 +365,55 @@ function App() {
                   <Route path="/warehouse/raw-materials/:id/qc" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/raw-materials"><RawMaterialQCForm /></ProtectedRoute>} />
                   <Route path="/warehouse/raw-materials/price-quality-history" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/raw-materials"><RawMaterialPriceQualityHistory /></ProtectedRoute>} />
                   <Route path="/warehouse/raw-materials/supplier-allocation" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/raw-materials"><SupplierAllocation /></ProtectedRoute>} />
-                  
+
                   <Route path="/warehouse/packing-materials" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials"><PackingMaterialsList /></ProtectedRoute>} />
                   <Route path="/warehouse/packing-materials/request" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials/request"><PackingMaterialRequestForm /></ProtectedRoute>} />
                   <Route path="/warehouse/packing-materials/:id" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials"><PackingMaterialStockDetail /></ProtectedRoute>} />
                   <Route path="/warehouse/packing-materials/:id/qc" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials"><PackingMaterialQCForm /></ProtectedRoute>} />
                   <Route path="/warehouse/packing-materials/price-quality-history" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials"><PackingMaterialPriceQualityHistory /></ProtectedRoute>} />
                   <Route path="/warehouse/packing-materials/supplier-allocation" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials"><PackingMaterialSupplierAllocation /></ProtectedRoute>} />
-                  
+
                   {/* Packing Material Request Routes */}
                   <Route path="/warehouse/packing-materials/requests" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials/requests"><PackingMaterialRequestList /></ProtectedRoute>} />
                   <Route path="/warehouse/packing-materials/requests/:id/allocate" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/packing-materials/requests"><PackingMaterialSupplierAllocation /></ProtectedRoute>} />
-                  
+
                   {/* Purchase Preparation Routes */}
                   <Route path="/warehouse/purchase-preparation" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/purchase-preparation"><PurchasePreparationList /></ProtectedRoute>} />
                   <Route path="/warehouse/purchase-preparation/:id" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/purchase-preparation"><PurchasePreparationDetail /></ProtectedRoute>} />
                   <Route path="/warehouse/delivery-qc/:deliveryId" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/purchase-preparation"><DeliveryQCForm /></ProtectedRoute>} />
-                  
+
                   {/* Raw Material Allocation Routes */}
                   <Route path="/warehouse/raw-materials/requests/:id/allocate" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/raw-materials/requests"><SupplierAllocation /></ProtectedRoute>} />
-                  
+
                   {/* Purchase Order Routes */}
                   <Route path="/warehouse/purchase-orders" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/purchase-orders"><PurchaseOrderList /></ProtectedRoute>} />
                   <Route path="/warehouse/purchase-orders/create" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/purchase-orders"><CreatePO /></ProtectedRoute>} />
-                  
+
                   {/* Goods Receipt Routes */}
                   <Route path="/warehouse/goods-receipts" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/goods-receipts"><GoodsReceiptList /></ProtectedRoute>} />
                   <Route path="/warehouse/goods-receipts/create" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/goods-receipts"><CreateGRN /></ProtectedRoute>} />
-                  
+
                   {/* Invoice and Payment Routes */}
                   <Route path="/warehouse/invoices" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/invoices"><InvoiceList /></ProtectedRoute>} />
                   <Route path="/warehouse/invoices/:id" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/invoices"><InvoiceDetail /></ProtectedRoute>} />
                   <Route path="/warehouse/invoices/:invoiceId/payment" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/invoices"><RecordPayment /></ProtectedRoute>} />
                   <Route path="/warehouse/invoices/create-from-grn" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/invoices"><CreateFromGRN /></ProtectedRoute>} />
-                  
+
                   {/* QC Routes */}
                   <Route path="/warehouse/qc/grn-list" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'Admin']} pagePath="/warehouse/qc/grn-list"><GRNQCList /></ProtectedRoute>} />
-                  
+
                   {/* Production Request Routes */}
                   <Route path="/warehouse/production-requests" element={<ProtectedRoute requiredRoles={['WarehouseStaff', 'HeadOfOperations', 'Admin']} pagePath="/warehouse/production-requests"><ProductionRequests /></ProtectedRoute>} />
-                  
+
                   {/* Head of Operations Routes */}
                   <Route path="/approvals/*" element={<ProtectedRoute requiredRoles={['HeadOfOperations', 'MainDirector']}><div className="p-6">Approvals section coming soon...</div></ProtectedRoute>} />
-                  
+
                   {/* Head of Operations Routes */}
                   <Route path="/approvals" element={<ProtectedRoute requiredRoles={['HeadOfOperations', 'MainDirector']} pagePath="/approvals"><ApprovalQueue /></ProtectedRoute>} />
                   <Route path="/approvals/history" element={<ProtectedRoute requiredRoles={['HeadOfOperations', 'MainDirector', 'WarehouseStaff', 'PackingMaterialsStoreManager', 'PackingAreaManager']} pagePath="/approvals/history"><RequestHistory /></ProtectedRoute>} />
                   <Route path="/approvals/supplier-monitoring" element={<ProtectedRoute requiredRoles={['HeadOfOperations', 'MainDirector']} pagePath="/approvals/supplier-monitoring"><SupplierMonitoring /></ProtectedRoute>} />
                   <Route path="/approvals/direct-shop-requests" element={<ProtectedRoute requiredRoles={['HeadOfOperations']} pagePath="/approvals/direct-shop-requests"><DirectShopRequestsHO /></ProtectedRoute>} />
-                  
+
                   {/* Production Routes - accessible via PCS permissions */}
                   <Route path="/production/store" element={<ProtectedRoute pagePath="/production/store"><ProductionStore /></ProtectedRoute>} />
                   <Route path="/production/batches" element={<ProtectedRoute pagePath="/production/batches"><BatchManagement /></ProtectedRoute>} />
@@ -418,12 +427,12 @@ function App() {
                   <Route path="/production/batch-table" element={<ProtectedRoute pagePath="/production/batch-table"><BatchTable /></ProtectedRoute>} />
                   <Route path="/production/products" element={<ProtectedRoute pagePath="/production/products"><ProductionProductList /></ProtectedRoute>} />
                   <Route path="/production/products-table" element={<ProtectedRoute pagePath="/production/products-table"><ProductsTable /></ProtectedRoute>} />
-                  
+
                   {/* Packing Area Routes */}
                   <Route path="/production/batches/:id" element={<ProtectedRoute pagePath="/production/batches"><BatchDetail /></ProtectedRoute>} />
                   <Route path="/production/products/:id/edit" element={<ProtectedRoute pagePath="/production/products/create"><EditProductionProduct /></ProtectedRoute>} />
                   <Route path="/production/products/:id" element={<ProtectedRoute pagePath="/production/products"><ProductDetail /></ProtectedRoute>} />
-                  
+
                   {/* Packing Area Routes - accessible via PCS permissions */}
                   <Route path="/packing-area/stock" element={<ProtectedRoute pagePath="/packing-area/stock"><PackingAreaStockList /></ProtectedRoute>} />
                   <Route path="/packing-area/stock/:id" element={<ProtectedRoute pagePath="/packing-area/stock"><PackingAreaStockDetail /></ProtectedRoute>} />
@@ -433,7 +442,7 @@ function App() {
                   <Route path="/packing-area/variants" element={<ProtectedRoute pagePath="/packing-area/variants"><ProductVariants /></ProtectedRoute>} />
                   <Route path="/packing-area/request-materials" element={<ProtectedRoute pagePath="/packing-area/request-materials"><RequestMaterials /></ProtectedRoute>} />
                   <Route path="/packing-area/request-products" element={<ProtectedRoute pagePath="/packing-area/request-products"><RequestProducts /></ProtectedRoute>} />
-                  
+
                   {/* Finished Goods Routes - accessible via PCS permissions */}
                   <Route path="/finished-goods/inventory" element={<ProtectedRoute pagePath="/finished-goods/inventory"><FGInventory /></ProtectedRoute>} />
                   <Route path="/finished-goods/storage-locations" element={<ProtectedRoute pagePath="/finished-goods/storage-locations"><StorageLocations /></ProtectedRoute>} />
@@ -445,7 +454,12 @@ function App() {
                   <Route path="/finished-goods/price-history" element={<ProtectedRoute pagePath="/finished-goods/price-history"><PriceHistory /></ProtectedRoute>} />
                   <Route path="/finished-goods/dispatch-tracking" element={<ProtectedRoute pagePath="/finished-goods/dispatch-tracking"><DispatchTracking /></ProtectedRoute>} />
                   <Route path="/finished-goods/approved-sales" element={<ProtectedRoute pagePath="/finished-goods/approved-sales"><ApprovedSalesRequests /></ProtectedRoute>} />
-                  
+                  <Route path="/finished-goods/expiry-management" element={<ProtectedRoute pagePath="/finished-goods/expiry-management"><ExpiryManagement /></ProtectedRoute>} />
+                  <Route path="/finished-goods/recipient-analytics" element={<ProtectedRoute pagePath="/finished-goods/recipient-analytics"><RecipientAnalytics /></ProtectedRoute>} />
+                  <Route path="/finished-goods/stock-movements" element={<ProtectedRoute pagePath="/finished-goods/stock-movements"><StockMovements /></ProtectedRoute>} />
+                  <Route path="/finished-goods/dispatch-reports" element={<ProtectedRoute pagePath="/finished-goods/dispatch-reports"><DispatchReports /></ProtectedRoute>} />
+                  <Route path="/finished-goods/location-management" element={<ProtectedRoute pagePath="/finished-goods/location-management"><LocationManagement /></ProtectedRoute>} />
+
                   {/* Packing Materials Store Routes - accessible via PCS permissions */}
                   <Route path="/packing-materials/stock" element={<ProtectedRoute pagePath="/packing-materials/stock"><StockList /></ProtectedRoute>} />
                   <Route path="/packing-materials/send" element={<ProtectedRoute pagePath="/packing-materials/send"><SendToPackingArea /></ProtectedRoute>} />
@@ -453,10 +467,10 @@ function App() {
                   <Route path="/packing-materials/requests/internal" element={<ProtectedRoute pagePath="/packing-materials/requests/internal"><InternalRequestsList /></ProtectedRoute>} />
                   <Route path="/packing-materials/requests/history" element={<ProtectedRoute pagePath="/packing-materials/requests/history"><PurchaseRequestHistory /></ProtectedRoute>} />
                   <Route path="/packing-materials/dispatches" element={<ProtectedRoute pagePath="/packing-materials/dispatches"><PackingMaterialsStoreDispatchHistory /></ProtectedRoute>} />
-                  
+
                   <Route path="/finished-goods/*" element={<ProtectedRoute requiredRoles={['FinishedGoodsStoreManager', 'Admin']}><FinishedGoodsStoreDashboard /></ProtectedRoute>} />
                   <Route path="/reports" element={<ProtectedRoute requiredRoles={['Admin', 'ReadOnlyAdmin', 'MainDirector', 'HeadOfOperations']} pagePath="/reports"><ReportsView /></ProtectedRoute>} />
-                  
+
                   {/* Data Entry Routes */}
                   <Route path="/data-entry" element={<ProtectedRoute requiredRoles={['DataEntry', 'Admin']} pagePath="/data-entry"><DataEntryDashboard /></ProtectedRoute>} />
                   <Route path="/data-entry/add-product" element={<ProtectedRoute requiredRoles={['DataEntry', 'Admin']} pagePath="/data-entry/add-product"><AddProduct /></ProtectedRoute>} />

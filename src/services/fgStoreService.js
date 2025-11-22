@@ -9,9 +9,9 @@ export const fgStoreService = {
         getData('fgDispatches'),
         getData('fgUnitDispatches')
       ]);
-      
+
       const pending = [];
-      
+
       // Process bulk dispatches
       if (bulkDispatches) {
         Object.entries(bulkDispatches)
@@ -25,7 +25,7 @@ export const fgStoreService = {
             });
           });
       }
-      
+
       // Process unit dispatches
       if (unitDispatches) {
         Object.entries(unitDispatches)
@@ -39,7 +39,7 @@ export const fgStoreService = {
             });
           });
       }
-      
+
       return pending.sort((a, b) => b.dispatchDate - a.dispatchDate);
     } catch (error) {
       throw new Error(`Failed to fetch pending dispatches: ${error.message}`);
@@ -53,9 +53,9 @@ export const fgStoreService = {
         getData('fgDispatches'),
         getData('fgUnitDispatches')
       ]);
-      
+
       const claimed = [];
-      
+
       // Process bulk dispatches
       if (bulkDispatches) {
         Object.entries(bulkDispatches)
@@ -69,7 +69,7 @@ export const fgStoreService = {
             });
           });
       }
-      
+
       // Process unit dispatches
       if (unitDispatches) {
         Object.entries(unitDispatches)
@@ -83,7 +83,7 @@ export const fgStoreService = {
             });
           });
       }
-      
+
       return claimed.sort((a, b) => b.claimedAt - a.claimedAt);
     } catch (error) {
       throw new Error(`Failed to fetch claimed dispatches: ${error.message}`);
@@ -95,15 +95,15 @@ export const fgStoreService = {
     try {
       const currentUser = auth.currentUser;
       const dispatch = await getData(`fgDispatches/${dispatchId}`);
-      
+
       if (!dispatch) {
         throw new Error('Dispatch not found');
       }
-      
+
       if (dispatch.claimedByFG) {
         throw new Error('Dispatch has already been claimed');
       }
-      
+
       const updates = {
         claimedByFG: true,
         claimedBy: currentUser?.uid,
@@ -114,9 +114,9 @@ export const fgStoreService = {
         storageLocation: claimData.location || 'FG-A1',
         updatedAt: Date.now()
       };
-      
+
       await updateData(`fgDispatches/${dispatchId}`, updates);
-      
+
       // Add to FG Store inventory
       for (const item of dispatch.items) {
         await this.addToInventory({
@@ -134,7 +134,7 @@ export const fgStoreService = {
           dispatchType: 'bulk'
         });
       }
-      
+
       return updates;
     } catch (error) {
       throw new Error(`Failed to claim bulk dispatch: ${error.message}`);
@@ -146,15 +146,15 @@ export const fgStoreService = {
     try {
       const currentUser = auth.currentUser;
       const dispatch = await getData(`fgUnitDispatches/${dispatchId}`);
-      
+
       if (!dispatch) {
         throw new Error('Unit dispatch not found');
       }
-      
+
       if (dispatch.claimedByFG) {
         throw new Error('Dispatch has already been claimed');
       }
-      
+
       const updates = {
         claimedByFG: true,
         claimedBy: currentUser?.uid,
@@ -165,9 +165,9 @@ export const fgStoreService = {
         storageLocation: claimData.location || 'FG-A1',
         updatedAt: Date.now()
       };
-      
+
       await updateData(`fgUnitDispatches/${dispatchId}`, updates);
-      
+
       // Add packaged units to FG Store inventory
       for (const item of dispatch.items) {
         await this.addPackagedUnitsToInventory({
@@ -187,7 +187,7 @@ export const fgStoreService = {
           dispatchType: 'units'
         });
       }
-      
+
       return updates;
     } catch (error) {
       throw new Error(`Failed to claim unit dispatch: ${error.message}`);
@@ -200,12 +200,12 @@ export const fgStoreService = {
       const currentUser = auth.currentUser;
       const inventoryKey = `${inventoryData.productId}_${inventoryData.batchNumber}`;
       const existingInventory = await getData(`finishedGoodsInventory/${inventoryKey}`);
-      
+
       if (existingInventory) {
         // Update existing inventory
         const currentQuantity = Number(existingInventory.quantity) || 0;
         const newQuantity = currentQuantity + (Number(inventoryData.quantity) || 0);
-        
+
         await updateData(`finishedGoodsInventory/${inventoryKey}`, {
           quantity: newQuantity,
           lastReceived: Date.now(),
@@ -230,7 +230,7 @@ export const fgStoreService = {
           createdAt: Date.now(),
           createdBy: currentUser?.uid
         };
-        
+
         // Only include optional fields if they have values
         if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
           newInventoryData.dispatchType = inventoryData.dispatchType;
@@ -238,32 +238,32 @@ export const fgStoreService = {
         if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
           newInventoryData.dispatchId = inventoryData.dispatchId;
         }
-        
+
         await setData(`finishedGoodsInventory/${inventoryKey}`, newInventoryData);
       }
-      
+
       // Record inventory movement
       const movementData = {
         productId: inventoryData.productId,
         batchNumber: inventoryData.batchNumber,
         type: 'in',
         quantity: Number(inventoryData.quantity) || 0,
-        reason: inventoryData.receivedFrom === 'manual_entry' 
+        reason: inventoryData.receivedFrom === 'manual_entry'
           ? `Manual entry - Release Code: ${inventoryData.releaseCode}`
           : `Received from Packing Area - Release Code: ${inventoryData.releaseCode}`,
         location: inventoryData.location,
         releaseCode: inventoryData.releaseCode
       };
-      
+
       if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
         movementData.dispatchId = inventoryData.dispatchId;
       }
       if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
         movementData.dispatchType = inventoryData.dispatchType;
       }
-      
+
       await this.recordInventoryMovement(movementData);
-      
+
     } catch (error) {
       throw new Error(`Failed to add to inventory: ${error.message}`);
     }
@@ -275,12 +275,12 @@ export const fgStoreService = {
       const currentUser = auth.currentUser;
       const inventoryKey = `${inventoryData.productId}_${inventoryData.variantName}_${inventoryData.batchNumber}`;
       const existingInventory = await getData(`finishedGoodsPackagedInventory/${inventoryKey}`);
-      
+
       if (existingInventory) {
         // Update existing packaged inventory
         const currentUnits = Number(existingInventory.unitsInStock) || 0;
         const newUnits = currentUnits + (Number(inventoryData.unitsReceived) || 0);
-        
+
         await updateData(`finishedGoodsPackagedInventory/${inventoryKey}`, {
           unitsInStock: newUnits,
           lastReceived: Date.now(),
@@ -307,7 +307,7 @@ export const fgStoreService = {
           createdAt: Date.now(),
           createdBy: currentUser?.uid
         };
-        
+
         // Only include optional fields if they have values
         if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
           newInventoryData.dispatchType = inventoryData.dispatchType;
@@ -315,10 +315,10 @@ export const fgStoreService = {
         if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
           newInventoryData.dispatchId = inventoryData.dispatchId;
         }
-        
+
         await setData(`finishedGoodsPackagedInventory/${inventoryKey}`, newInventoryData);
       }
-      
+
       // Record packaged inventory movement
       const movementData = {
         productId: inventoryData.productId,
@@ -332,16 +332,16 @@ export const fgStoreService = {
         location: inventoryData.location,
         releaseCode: inventoryData.releaseCode
       };
-      
+
       if (inventoryData.dispatchId !== undefined && inventoryData.dispatchId !== null) {
         movementData.dispatchId = inventoryData.dispatchId;
       }
       if (inventoryData.dispatchType !== undefined && inventoryData.dispatchType !== null) {
         movementData.dispatchType = inventoryData.dispatchType;
       }
-      
+
       await this.recordPackagedInventoryMovement(movementData);
-      
+
     } catch (error) {
       throw new Error(`Failed to add packaged units to inventory: ${error.message}`);
     }
@@ -352,7 +352,7 @@ export const fgStoreService = {
     try {
       const inventory = await getData('finishedGoodsInventory');
       if (!inventory) return [];
-      
+
       let filteredInventory = Object.entries(inventory).map(([id, item]) => ({
         id,
         ...item
@@ -361,7 +361,7 @@ export const fgStoreService = {
       if (filters.productId) {
         filteredInventory = filteredInventory.filter(item => item.productId === filters.productId);
       }
-      
+
       if (filters.location) {
         filteredInventory = filteredInventory.filter(item => item.location === filters.location);
       }
@@ -377,7 +377,7 @@ export const fgStoreService = {
     try {
       const inventory = await getData('finishedGoodsPackagedInventory');
       if (!inventory) return [];
-      
+
       let filteredInventory = Object.entries(inventory).map(([id, item]) => ({
         id,
         ...item
@@ -386,7 +386,7 @@ export const fgStoreService = {
       if (filters.productId) {
         filteredInventory = filteredInventory.filter(item => item.productId === filters.productId);
       }
-      
+
       if (filters.location) {
         filteredInventory = filteredInventory.filter(item => item.location === filters.location);
       }
@@ -407,7 +407,7 @@ export const fgStoreService = {
         createdByName: currentUser?.displayName || currentUser?.email || 'FG Store Manager',
         createdAt: Date.now()
       };
-      
+
       const id = await pushData('fgInventoryMovements', movement);
       return { id, ...movement };
     } catch (error) {
@@ -425,7 +425,7 @@ export const fgStoreService = {
         createdByName: currentUser?.displayName || currentUser?.email || 'FG Store Manager',
         createdAt: Date.now()
       };
-      
+
       const id = await pushData('fgPackagedInventoryMovements', movement);
       return { id, ...movement };
     } catch (error) {
@@ -441,30 +441,30 @@ export const fgStoreService = {
         this.getPackagedInventory(),
         this.getPendingDispatches()
       ]);
-      
+
       const totalBulkItems = bulkInventory.length;
       const totalPackagedItems = packagedInventory.length;
       const totalItems = totalBulkItems + totalPackagedItems;
-      
+
       const totalBulkQuantity = bulkInventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
       const totalPackagedUnits = packagedInventory.reduce((sum, item) => sum + (item.unitsInStock || 0), 0);
-      
+
       // Calculate expiring items (within 30 days)
       const currentDate = new Date();
       const alertDate = new Date(currentDate.getTime() + (30 * 24 * 60 * 60 * 1000));
-      
+
       const expiringBulkItems = bulkInventory.filter(item => {
         if (!item.expiryDate) return false;
         return new Date(item.expiryDate) <= alertDate;
       }).length;
-      
+
       const expiringPackagedItems = packagedInventory.filter(item => {
         if (!item.expiryDate) return false;
         return new Date(item.expiryDate) <= alertDate;
       }).length;
-      
+
       const expiringItems = expiringBulkItems + expiringPackagedItems;
-      
+
       return {
         totalItems,
         totalBulkItems,
@@ -486,12 +486,12 @@ export const fgStoreService = {
         this.getInventory(),
         this.getPackagedInventory()
       ]);
-      
+
       const currentDate = new Date();
       const alertDate = new Date(currentDate.getTime() + (daysAhead * 24 * 60 * 60 * 1000));
-      
+
       const alerts = [];
-      
+
       // Check bulk inventory
       bulkInventory.forEach(item => {
         if (item.expiryDate && new Date(item.expiryDate) <= alertDate) {
@@ -503,7 +503,7 @@ export const fgStoreService = {
           });
         }
       });
-      
+
       // Check packaged inventory
       packagedInventory.forEach(item => {
         if (item.expiryDate && new Date(item.expiryDate) <= alertDate) {
@@ -515,7 +515,7 @@ export const fgStoreService = {
           });
         }
       });
-      
+
       return alerts.sort((a, b) => a.daysToExpiry - b.daysToExpiry);
     } catch (error) {
       throw new Error(`Failed to get expiry alerts: ${error.message}`);
@@ -524,14 +524,52 @@ export const fgStoreService = {
 
   getExpiryAlertLevel(expiryDate) {
     if (!expiryDate) return 'none';
-    
+
     const daysToExpiry = Math.ceil((new Date(expiryDate) - new Date()) / (24 * 60 * 60 * 1000));
-    
+
     if (daysToExpiry <= 0) return 'expired';
     if (daysToExpiry <= 7) return 'critical';
     if (daysToExpiry <= 14) return 'warning';
     if (daysToExpiry <= 30) return 'caution';
     return 'good';
+  },
+
+  // Get all stock movements
+  async getAllStockMovements() {
+    try {
+      const [bulkMovements, packagedMovements] = await Promise.all([
+        getData('fgInventoryMovements'),
+        getData('fgPackagedInventoryMovements')
+      ]);
+
+      const movements = [];
+
+      if (bulkMovements) {
+        Object.entries(bulkMovements).forEach(([id, movement]) => {
+          movements.push({
+            id,
+            ...movement,
+            category: 'bulk',
+            displayText: `${movement.productName} (Bulk - ${movement.batchNumber})`
+          });
+        });
+      }
+
+      if (packagedMovements) {
+        Object.entries(packagedMovements).forEach(([id, movement]) => {
+          movements.push({
+            id,
+            ...movement,
+            category: 'units',
+            displayText: `${movement.productName} - ${movement.variantName} (${movement.batchNumber})`
+          });
+        });
+      }
+
+      return movements.sort((a, b) => b.createdAt - a.createdAt);
+    } catch (error) {
+      throw new Error(`Failed to get all stock movements: ${error.message}`);
+    }
   },
 
   // Get recent stock movements
@@ -541,9 +579,9 @@ export const fgStoreService = {
         getData('fgInventoryMovements'),
         getData('fgPackagedInventoryMovements')
       ]);
-      
+
       const movements = [];
-      
+
       if (bulkMovements) {
         Object.entries(bulkMovements).forEach(([id, movement]) => {
           movements.push({
@@ -554,7 +592,7 @@ export const fgStoreService = {
           });
         });
       }
-      
+
       if (packagedMovements) {
         Object.entries(packagedMovements).forEach(([id, movement]) => {
           movements.push({
@@ -565,7 +603,7 @@ export const fgStoreService = {
           });
         });
       }
-      
+
       return movements
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, limit);

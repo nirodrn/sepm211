@@ -80,14 +80,14 @@ const Register = () => {
           <div className="mx-auto h-12 w-12 bg-blue-600 rounded-full flex items-center justify-center">
             <UserPlus className="h-6 w-6 text-white" />
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Create your account
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            SEPMzonline
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Join the Warehouse Management System
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6 bg-white p-8 rounded-xl shadow-lg" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>

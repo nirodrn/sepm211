@@ -4,7 +4,7 @@ import { fgDispatchToExternalService } from '../../services/fgDispatchToExternal
 import { fgPricingService } from '../../services/fgPricingService';
 import LoadingSpinner from '../../components/Common/LoadingSpinner';
 import { formatDate } from '../../utils/formatDate';
-import { Package, Search, Truck, Send, CheckCircle, Clock, Eye, DollarSign, User, Store, Truck as TruckIcon } from 'lucide-react';
+import { Package, Search, Truck, Send, CheckCircle, Clock, Eye, DollarSign, User, Store, Truck as TruckIcon, BarChart3 } from 'lucide-react';
 
 const ApprovedSalesRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -28,12 +28,12 @@ const ApprovedSalesRequests = () => {
     try {
       setLoading(true);
       const approvedRequests = await fgDispatchService.getApprovedSalesRequests();
-      
+
       // For each approved request, fetch its dispatch history
       const requestsWithDispatchStatus = await Promise.all(
         approvedRequests.map(async (request) => {
           const dispatches = await fgDispatchService.getSalesRequestDispatches(request.id);
-          
+
           let totalDispatchedQty = {};
           dispatches.forEach(dispatch => {
             Object.entries(dispatch.items).forEach(([itemId, item]) => {
@@ -58,8 +58,8 @@ const ApprovedSalesRequests = () => {
             isSent = dispatches.some(dispatch => dispatch.status === 'Sent');
           }
 
-          return { 
-            ...request, 
+          return {
+            ...request,
             dispatches,
             isFullyDispatched,
             isSent
@@ -88,21 +88,21 @@ const ApprovedSalesRequests = () => {
 
   const confirmSend = async () => {
     if (!selectedRequest) return;
-    
+
     try {
       setSending(true);
       setError('');
-      
+
       // Get product pricing for the items
       const itemsWithPricing = await Promise.all(
         Object.entries(selectedRequest.items).map(async ([itemId, item]) => {
           let pricing = await fgPricingService.getProductPricingForDispatch(item.name);
-          
+
           if (!pricing) {
             // Set default pricing if not exists
             pricing = await fgPricingService.setDefaultProductPricing(item.name, 100);
           }
-          
+
           return {
             productId: item.name,
             productName: item.name,
@@ -131,11 +131,11 @@ const ApprovedSalesRequests = () => {
         expectedDeliveryDate: sendData.expectedDeliveryDate,
         priority: selectedRequest.priority || 'normal'
       };
-      
+
       const dispatch = await fgDispatchToExternalService.dispatchToExternal(dispatchPayload);
-      
+
       // Mark the sales approval history as sent (this is now handled in dispatchToExternal)
-      
+
       setShowSendModal(false);
       setSelectedRequest(null);
       setSuccess('Request sent successfully to recipient!');
@@ -225,7 +225,7 @@ const ApprovedSalesRequests = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Send Products to {selectedRequest.requesterName}
             </h3>
-            
+
             <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center space-x-2 mb-2">
                 {React.createElement(getRequestTypeIcon(selectedRequest.requestType), { className: "h-5 w-5 text-blue-600" })}
@@ -263,7 +263,7 @@ const ApprovedSalesRequests = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -463,7 +463,7 @@ const ApprovedSalesRequests = () => {
           ) : (
             filteredRequests.map((request) => {
               const RequestTypeIcon = getRequestTypeIcon(request.requestType);
-              
+
               return (
                 <div key={request.id} className="p-6 hover:bg-gray-50">
                   <div className="flex items-start justify-between">
@@ -471,7 +471,7 @@ const ApprovedSalesRequests = () => {
                       <div className="p-2 rounded-lg bg-blue-100">
                         <RequestTypeIcon className="h-5 w-5 text-blue-600" />
                       </div>
-                      
+
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
                           <h4 className="font-medium text-gray-900">
@@ -480,14 +480,13 @@ const ApprovedSalesRequests = () => {
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRequestTypeColor(request.requestType)}`}>
                             {getRequestTypeLabel(request.requestType)}
                           </span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            request.isSent ? 'bg-green-100 text-green-800' :
-                            request.isFullyDispatched ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${request.isSent ? 'bg-green-100 text-green-800' :
+                              request.isFullyDispatched ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-blue-100 text-blue-800'
+                            }`}>
                             {request.isSent ? 'Sent' :
-                             request.isFullyDispatched ? 'Ready to Send' :
-                             'Approved'}
+                              request.isFullyDispatched ? 'Ready to Send' :
+                                'Approved'}
                           </span>
                           {request.priority === 'urgent' && (
                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
@@ -495,7 +494,7 @@ const ApprovedSalesRequests = () => {
                             </span>
                           )}
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3 text-sm text-gray-600">
                           <div>
                             <span className="font-medium">Requester Role:</span>
@@ -514,7 +513,7 @@ const ApprovedSalesRequests = () => {
                             <span className="ml-1">LKR {calculateRequestValue(request.items).toLocaleString()}</span>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <h5 className="font-medium text-gray-700">Items:</h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -525,7 +524,7 @@ const ApprovedSalesRequests = () => {
                             ))}
                           </div>
                         </div>
-                        
+
                         {request.notes && (
                           <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
                             <p className="text-sm text-blue-800">
@@ -572,7 +571,7 @@ const ApprovedSalesRequests = () => {
                           Pending Dispatch
                         </span>
                       )}
-                      
+
                       <button
                         onClick={() => {
                           const details = `Request Details:\n\n` +
@@ -583,7 +582,7 @@ const ApprovedSalesRequests = () => {
                             `Approved: ${formatDate(request.approvedAt)}\n` +
                             `Status: ${request.isSent ? 'Sent' : request.isFullyDispatched ? 'Ready to Send' : 'Pending Dispatch'}\n\n` +
                             `Items:\n` +
-                            Object.entries(request.items).map(([id, item]) => 
+                            Object.entries(request.items).map(([id, item]) =>
                               `• ${item.name}: ${item.qty} units`
                             ).join('\n') +
                             `\n\nTotal Value: LKR ${calculateRequestValue(request.items).toLocaleString()}`;

@@ -7,7 +7,7 @@ export const fgDispatchToExternalService = {
     try {
       const currentUser = auth.currentUser;
       const releaseCode = this.generateReleaseCode();
-      
+
       const dispatch = {
         ...dispatchData,
         releaseCode,
@@ -22,22 +22,22 @@ export const fgDispatchToExternalService = {
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-      
+
       const dispatchId = await pushData('externalDispatches', dispatch);
-      
+
       // Update FG inventory
       for (const item of dispatchData.items) {
         await this.updateFGInventoryAfterDispatch(item);
       }
-      
+
       // Record dispatch tracking for each recipient
       await this.recordDispatchTracking(dispatchId, dispatch);
-      
+
       // Notify mobile app if applicable
       if (dispatchData.recipientType === 'direct_shop') {
         await this.notifyMobileApp(dispatchId, dispatch);
       }
-      
+
       return { dispatchId, ...dispatch };
     } catch (error) {
       throw new Error(`Failed to dispatch to external: ${error.message}`);
@@ -48,12 +48,12 @@ export const fgDispatchToExternalService = {
   async updateFGInventoryAfterDispatch(item) {
     try {
       const currentUser = auth.currentUser;
-      
+
       if (item.type === 'bulk') {
         // Update bulk inventory
         const inventoryKey = `${item.productId}_${item.batchNumber}`;
         const currentInventory = await getData(`finishedGoodsInventory/${inventoryKey}`);
-        
+
         if (currentInventory) {
           const newQuantity = Math.max(0, (currentInventory.quantity || 0) - (item.quantity || 0));
           await updateData(`finishedGoodsInventory/${inventoryKey}`, {
@@ -67,7 +67,7 @@ export const fgDispatchToExternalService = {
         // Update packaged inventory
         const inventoryKey = `${item.productId}_${item.variantName}_${item.batchNumber}`;
         const currentInventory = await getData(`finishedGoodsPackagedInventory/${inventoryKey}`);
-        
+
         if (currentInventory) {
           const newUnits = Math.max(0, (currentInventory.unitsInStock || 0) - (item.units || 0));
           await updateData(`finishedGoodsPackagedInventory/${inventoryKey}`, {
@@ -78,7 +78,7 @@ export const fgDispatchToExternalService = {
           });
         }
       }
-      
+
       // Record inventory movement
       const { fgStoreService } = await import('./fgStoreService');
       await fgStoreService.recordInventoryMovement({
@@ -90,7 +90,7 @@ export const fgDispatchToExternalService = {
         location: item.fromLocation || 'FG Store',
         dispatchType: 'external'
       });
-      
+
     } catch (error) {
       throw new Error(`Failed to update inventory after dispatch: ${error.message}`);
     }
@@ -101,7 +101,7 @@ export const fgDispatchToExternalService = {
     try {
       const currentUser = auth.currentUser;
       const request = await getData(`dsreqs/${requestId}`);
-      
+
       if (!request) {
         throw new Error('Request not found');
       }
@@ -109,14 +109,14 @@ export const fgDispatchToExternalService = {
       // Get or set product pricing
       const { fgPricingService } = await import('./fgPricingService');
       let pricing = await fgPricingService.getProductPricingForDispatch(request.product);
-      
+
       if (!pricing) {
         // Set default pricing if not exists
         pricing = await fgPricingService.setDefaultProductPricing(request.product, dispatchData.unitPrice || 100);
       }
 
       const releaseCode = this.generateReleaseCode();
-      
+
       const dispatch = {
         requestId: requestId,
         recipientType: 'direct_shop',
@@ -147,12 +147,12 @@ export const fgDispatchToExternalService = {
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-      
+
       const dispatchId = await pushData('externalDispatches', dispatch);
-      
+
       // Record dispatch tracking
       await this.recordDispatchTracking(dispatchId, dispatch);
-      
+
       // Update request status
       await updateData(`dsreqs/${requestId}`, {
         status: 'dispatched',
@@ -164,19 +164,19 @@ export const fgDispatchToExternalService = {
         releaseCode: releaseCode,
         updatedAt: Date.now()
       });
-      
+
       // Notify mobile app
       await this.notifyMobileApp(dispatchId, dispatch);
-      
+
       // Notify HO about completion
       await this.notifyHeadOfOperationsCompletion(requestId, dispatch);
-      
+
       // Mark the sales approval history as sent if this was from a sales request
       if (dispatchData.fromSalesRequest) {
         const { fgDispatchService } = await import('./fgDispatchService');
         await fgDispatchService.markSalesRequestAsSent(dispatchData.salesRequestId);
       }
-      
+
       return { dispatchId, ...dispatch };
     } catch (error) {
       throw new Error(`Failed to dispatch direct shop request: ${error.message}`);
@@ -190,7 +190,7 @@ export const fgDispatchToExternalService = {
         type: 'direct_shop_request_completed',
         requestId,
         message: `Direct shop request completed: ${dispatchData.shopName} received ${dispatchData.items?.[0]?.productName}`,
-        data: { 
+        data: {
           requestType: 'direct_shop_completion',
           shopName: dispatchData.shopName,
           releaseCode: dispatchData.releaseCode,
@@ -200,14 +200,14 @@ export const fgDispatchToExternalService = {
         status: 'unread',
         createdAt: Date.now()
       };
-      
+
       // Get HO users
       const users = await getData('users');
       if (users) {
         const hoUsers = Object.entries(users)
           .filter(([_, user]) => user.role === 'HeadOfOperations')
           .map(([uid, _]) => uid);
-        
+
         for (const hoId of hoUsers) {
           await pushData(`notifications/${hoId}`, notification);
         }
@@ -220,7 +220,7 @@ export const fgDispatchToExternalService = {
   async recordDispatchTracking(dispatchId, dispatchData) {
     try {
       const currentUser = auth.currentUser;
-      
+
       const trackingRecord = {
         dispatchId,
         recipientType: dispatchData.recipientType, // 'direct_shop', 'distributor', 'direct_representative'
@@ -249,12 +249,12 @@ export const fgDispatchToExternalService = {
         createdByName: currentUser?.displayName || currentUser?.email || 'FG Store Manager',
         createdAt: Date.now()
       };
-      
+
       const trackingId = await pushData('externalDispatchTracking', trackingRecord);
-      
+
       // Also update recipient-specific tracking
       await this.updateRecipientTracking(dispatchData.recipientType, dispatchData.recipientId, trackingRecord);
-      
+
       return { trackingId, ...trackingRecord };
     } catch (error) {
       throw new Error(`Failed to record dispatch tracking: ${error.message}`);
@@ -266,7 +266,7 @@ export const fgDispatchToExternalService = {
     try {
       const trackingPath = `${recipientType}Tracking/${recipientId}`;
       const existingTracking = await getData(trackingPath);
-      
+
       const updates = {
         recipientId,
         recipientType,
@@ -285,17 +285,17 @@ export const fgDispatchToExternalService = {
         lastQuantityDispatched: trackingData.totalQuantity,
         updatedAt: Date.now()
       };
-      
+
       if (!existingTracking) {
         updates.firstDispatchDate = trackingData.dispatchDate;
         updates.createdAt = Date.now();
       }
-      
+
       await setData(trackingPath, updates);
-      
+
       // Also create a detailed dispatch log for this recipient
       await this.createDetailedDispatchLog(recipientId, trackingData);
-      
+
       return updates;
     } catch (error) {
       throw new Error(`Failed to update recipient tracking: ${error.message}`);
@@ -320,7 +320,7 @@ export const fgDispatchToExternalService = {
         totalValue: trackingData.totalValue,
         createdAt: Date.now()
       };
-      
+
       await pushData(`detailedDispatchLogs/${recipientId}`, logEntry);
       return logEntry;
     } catch (error) {
@@ -335,22 +335,22 @@ export const fgDispatchToExternalService = {
         getData(`${recipientType}Tracking/${recipientId}`),
         getData(`detailedDispatchLogs/${recipientId}`)
       ]);
-      
+
       const analytics = {
         summary: tracking || {},
         recentDispatches: [],
         monthlyTrends: {},
         topProducts: {}
       };
-      
+
       if (detailedLogs) {
         const logs = Object.values(detailedLogs);
-        
+
         // Recent dispatches (last 10)
         analytics.recentDispatches = logs
           .sort((a, b) => b.dispatchDate - a.dispatchDate)
           .slice(0, 10);
-        
+
         // Monthly trends (last 12 months)
         const monthlyData = {};
         logs.forEach(log => {
@@ -363,7 +363,7 @@ export const fgDispatchToExternalService = {
           monthlyData[month].value += log.totalValue;
         });
         analytics.monthlyTrends = monthlyData;
-        
+
         // Top products
         const productData = {};
         logs.forEach(log => {
@@ -381,7 +381,7 @@ export const fgDispatchToExternalService = {
           .sort((a, b) => b.value - a.value)
           .slice(0, 5);
       }
-      
+
       return analytics;
     } catch (error) {
       throw new Error(`Failed to get recipient analytics: ${error.message}`);
@@ -392,7 +392,7 @@ export const fgDispatchToExternalService = {
     try {
       const trackingPath = `${recipientType}Tracking/${recipientId}`;
       const existingTracking = await getData(trackingPath);
-      
+
       const updates = {
         recipientId,
         recipientType,
@@ -407,12 +407,12 @@ export const fgDispatchToExternalService = {
         lastReleaseCode: trackingData.releaseCode,
         updatedAt: Date.now()
       };
-      
+
       if (!existingTracking) {
         updates.firstDispatchDate = trackingData.dispatchDate;
         updates.createdAt = Date.now();
       }
-      
+
       await setData(trackingPath, updates);
       return updates;
     } catch (error) {
@@ -425,7 +425,7 @@ export const fgDispatchToExternalService = {
     try {
       const tracking = await getData('externalDispatchTracking');
       if (!tracking) return [];
-      
+
       let filteredTracking = Object.entries(tracking)
         .filter(([_, record]) => record.recipientType === recipientType)
         .map(([id, record]) => ({ id, ...record }));
@@ -433,11 +433,11 @@ export const fgDispatchToExternalService = {
       if (filters.recipientId) {
         filteredTracking = filteredTracking.filter(record => record.recipientId === filters.recipientId);
       }
-      
+
       if (filters.dateFrom) {
         filteredTracking = filteredTracking.filter(record => record.dispatchDate >= filters.dateFrom);
       }
-      
+
       if (filters.dateTo) {
         filteredTracking = filteredTracking.filter(record => record.dispatchDate <= filters.dateTo);
       }
@@ -454,7 +454,7 @@ export const fgDispatchToExternalService = {
       const trackingPath = `${recipientType}Tracking`;
       const tracking = await getData(trackingPath);
       if (!tracking) return [];
-      
+
       return Object.entries(tracking).map(([recipientId, data]) => ({
         recipientId,
         ...data
@@ -469,7 +469,7 @@ export const fgDispatchToExternalService = {
     try {
       const dispatches = await getData('externalDispatches');
       if (!dispatches) return [];
-      
+
       let filteredDispatches = Object.entries(dispatches).map(([id, dispatch]) => ({
         id,
         ...dispatch
@@ -478,13 +478,17 @@ export const fgDispatchToExternalService = {
       if (filters.recipientType) {
         filteredDispatches = filteredDispatches.filter(d => d.recipientType === filters.recipientType);
       }
-      
+
       if (filters.status) {
         filteredDispatches = filteredDispatches.filter(d => d.status === filters.status);
       }
-      
+
       if (filters.dateFrom) {
         filteredDispatches = filteredDispatches.filter(d => d.dispatchedAt >= filters.dateFrom);
+      }
+
+      if (filters.dateTo) {
+        filteredDispatches = filteredDispatches.filter(d => d.dispatchedAt <= filters.dateTo);
       }
 
       return filteredDispatches.sort((a, b) => b.dispatchedAt - a.dispatchedAt);
@@ -498,12 +502,12 @@ export const fgDispatchToExternalService = {
     try {
       const salesHistory = await getData('salesApprovalHistory');
       if (!salesHistory) return [];
-      
+
       // Filter approved requests that haven't been completed by FG yet
       const pendingRequests = Object.entries(salesHistory)
         .filter(([_, request]) => request.status === 'Approved' && !request.isCompletedByFG)
         .map(([id, request]) => ({ id, ...request }));
-      
+
       return pendingRequests.sort((a, b) => b.approvedAt - a.approvedAt);
     } catch (error) {
       throw new Error(`Failed to fetch pending sales requests: ${error.message}`);
@@ -532,7 +536,7 @@ export const fgDispatchToExternalService = {
     const day = String(now.getDate()).padStart(2, '0');
     const time = String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
     const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    
+
     return `${year}${month}${day}${time}${random}`;
   },
 
@@ -556,9 +560,9 @@ export const fgDispatchToExternalService = {
         quantity: dispatchData.items?.[0]?.quantity || 0,
         timestamp: Date.now()
       };
-      
+
       await pushData(`mobileNotifications/${dispatchData.recipientId}`, notification);
-      
+
       // Also create a general mobile notification for the request
       if (dispatchData.requestId) {
         await pushData(`mobileNotifications/${dispatchData.requestId}`, {

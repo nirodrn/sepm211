@@ -21,7 +21,7 @@ export const pcsService = {
     return [
       // Dashboard
       { path: '/dashboard', name: 'Dashboard', category: 'General', description: 'Main dashboard view' },
-      
+
       // Admin Pages
       { path: '/admin/users', name: 'User Management', category: 'Admin', description: 'Manage system users' },
       { path: '/admin/users/add', name: 'Add User', category: 'Admin', description: 'Add new users' },
@@ -40,7 +40,7 @@ export const pcsService = {
       { path: '/admin/system/data-override', name: 'System Override', category: 'Admin', description: 'System data override' },
       { path: '/admin/pcs', name: 'Permission Control', category: 'Admin', description: 'Manage user permissions' },
       { path: '/admin/pcs/sales-history', name: 'Sales Approval History', category: 'Admin', description: 'View sales approval history' },
-      
+
       // Warehouse Operations
       { path: '/warehouse/raw-materials', name: 'Raw Materials', category: 'Warehouse', description: 'Raw materials inventory' },
       { path: '/warehouse/raw-materials/request', name: 'Request Raw Materials', category: 'Warehouse', description: 'Request raw materials' },
@@ -54,7 +54,7 @@ export const pcsService = {
       { path: '/warehouse/purchase-preparation', name: 'Purchase Preparation', category: 'Warehouse', description: 'Purchase preparation table' },
       { path: '/warehouse/qc/grn-list', name: 'GRN Quality Control', category: 'Warehouse', description: 'GRN quality control' },
       { path: '/warehouse/production-requests', name: 'Production Requests', category: 'Warehouse', description: 'Production material requests' },
-      
+
       // Production
       { path: '/production/store', name: 'Production Store', category: 'Production', description: 'Production store inventory' },
       { path: '/production/batches', name: 'Batch Management', category: 'Production', description: 'Manage production batches' },
@@ -68,7 +68,7 @@ export const pcsService = {
       { path: '/production/batch-table', name: 'Batch Table', category: 'Production', description: 'Batch data table' },
       { path: '/production/products', name: 'Product Details', category: 'Production', description: 'Product details view' },
       { path: '/production/products-table', name: 'Products Table', category: 'Production', description: 'Products data table' },
-      
+
       // Packing Area
       { path: '/packing-area/stock', name: 'Product Stock', category: 'Packing Area', description: 'Packing area stock' },
       { path: '/packing-area/send-to-fg', name: 'Send to FG Store', category: 'Packing Area', description: 'Send to finished goods store' },
@@ -77,7 +77,7 @@ export const pcsService = {
       { path: '/packing-area/dispatch-history', name: 'Dispatch History', category: 'Packing Area', description: 'Dispatch history' },
       { path: '/packing-area/request-materials', name: 'Request Materials', category: 'Packing Area', description: 'Request packing materials' },
       { path: '/packing-area/request-products', name: 'Request Products', category: 'Packing Area', description: 'Request products from production' },
-      
+
       // Finished Goods Store
       { path: '/finished-goods/inventory', name: 'Inventory', category: 'Finished Goods', description: 'Finished goods inventory' },
       { path: '/finished-goods/storage-locations', name: 'Storage Locations', category: 'Finished Goods', description: 'Storage location management' },
@@ -86,20 +86,21 @@ export const pcsService = {
       { path: '/finished-goods/pricing', name: 'Product Pricing', category: 'Finished Goods', description: 'Manage product prices' },
       { path: '/finished-goods/add-products-pricing', name: 'Add Products & Pricing', category: 'Finished Goods', description: 'Bulk upload finished goods products and prices via Excel' },
       { path: '/finished-goods/external-dispatches', name: 'External Dispatches', category: 'Finished Goods', description: 'Track external dispatches' },
-      
+
       // Additional FG Store Pages
       { path: '/finished-goods/price-history', name: 'Price History', category: 'Finished Goods', description: 'View product price history' },
       { path: '/finished-goods/dispatch-tracking', name: 'Dispatch Tracking', category: 'Finished Goods', description: 'Track all dispatches by recipient' },
       { path: '/finished-goods/recipient-analytics', name: 'Recipient Analytics', category: 'Finished Goods', description: 'View recipient dispatch analytics' },
+      { path: '/finished-goods/stock-movements', name: 'Stock Movements', category: 'Finished Goods', description: 'View stock movement history' },
       { path: '/finished-goods/approved-sales', name: 'Approved Sales Requests', category: 'Finished Goods', description: 'Send approved sales to recipients' },
       { path: '/finished-goods/mobile-requests', name: 'Mobile App Requests', category: 'Finished Goods', description: 'Manage requests from mobile app' },
-      { path: '/finished-goods/stock-movements', name: 'Stock Movements', category: 'Finished Goods', description: 'View detailed stock movement history' },
+
       { path: '/finished-goods/expiry-management', name: 'Expiry Management', category: 'Finished Goods', description: 'Manage product expiry dates and alerts' },
       { path: '/finished-goods/quality-control', name: 'Quality Control', category: 'Finished Goods', description: 'Quality control for finished goods' },
       { path: '/finished-goods/batch-tracking', name: 'Batch Tracking', category: 'Finished Goods', description: 'Track products by batch numbers' },
       { path: '/finished-goods/location-management', name: 'Location Management', category: 'Finished Goods', description: 'Advanced storage location management' },
       { path: '/finished-goods/dispatch-reports', name: 'Dispatch Reports', category: 'Finished Goods', description: 'Generate dispatch reports' },
-      
+
       // Packing Materials Store
       { path: '/packing-materials/stock', name: 'Stock List', category: 'Packing Materials Store', description: 'Packing materials stock' },
       { path: '/packing-materials/send', name: 'Send to Packing', category: 'Packing Materials Store', description: 'Send materials to packing area' },
@@ -107,19 +108,19 @@ export const pcsService = {
       { path: '/packing-materials/requests/internal', name: 'Internal Requests', category: 'Packing Materials Store', description: 'Internal material requests' },
       { path: '/packing-materials/requests/history', name: 'Request History', category: 'Packing Materials Store', description: 'Request history' },
       { path: '/packing-materials/dispatches', name: 'Dispatch History', category: 'Packing Materials Store', description: 'Dispatch history' },
-      
+
       // Head of Operations
       { path: '/approvals', name: 'Approval Queue', category: 'Head of Operations', description: 'Approval queue' },
       { path: '/approvals/history', name: 'Request History', category: 'Head of Operations', description: 'Request history' },
       { path: '/approvals/supplier-monitoring', name: 'Supplier Monitoring', category: 'Head of Operations', description: 'Supplier monitoring' },
       { path: '/approvals/direct-shop-requests', name: 'Direct Shop Requests', category: 'Head of Operations', description: 'Approve direct shop requests' },
-      
+
       // Reports
       { path: '/reports', name: 'Reports', category: 'Reports', description: 'General reports view' },
-      
+
       // Main Director
       { path: '/direct-shop-requests', name: 'Direct Shop Requests', category: 'Main Director', description: 'Review direct shop requests from mobile app' },
-      
+
       // Data Entry
       { path: '/data-entry', name: 'Data Entry Dashboard', category: 'Data Entry', description: 'Data entry dashboard' },
       { path: '/data-entry/add-product', name: 'Add Product', category: 'Data Entry', description: 'Add new product' },
@@ -133,14 +134,14 @@ export const pcsService = {
     try {
       const permissions = await getData(`pcs/${userId}`);
       const firebasePages = permissions?.pages || {};
-      
+
       // Convert Firebase keys back to page paths
       const convertedPages = {};
       Object.entries(firebasePages).forEach(([firebaseKey, value]) => {
         const pagePath = formatFirebaseKeyToPath(firebaseKey);
         convertedPages[pagePath] = value;
       });
-      
+
       return convertedPages;
     } catch (error) {
       console.error('Failed to get user permissions:', error);
@@ -152,26 +153,26 @@ export const pcsService = {
   async updateUserPermissions(userId, permissions) {
     try {
       const currentUser = auth.currentUser;
-      
+
       // Always ensure dashboard is included for non-Admin users
       const finalPermissions = { '/dashboard': true, ...permissions };
-      
+
       // Convert page paths to Firebase-safe keys
       const firebasePages = {};
       Object.entries(finalPermissions).forEach(([pagePath, value]) => {
         const firebaseKey = formatPathForFirebase(pagePath);
         firebasePages[firebaseKey] = value;
       });
-      
+
       const permissionData = {
         pages: firebasePages,
         updatedAt: Date.now(),
         updatedBy: currentUser?.uid
       };
-      
+
       // Use setData to completely replace the permissions object for immediate update
       await setData(`pcs/${userId}`, permissionData);
-      
+
       return permissionData;
     } catch (error) {
       throw new Error(`Failed to update user permissions: ${error.message}`);
@@ -196,9 +197,9 @@ export const pcsService = {
         getData('users'),
         getData('pcs')
       ]);
-      
+
       if (!users) return [];
-      
+
       return Object.entries(users).map(([uid, userData]) => ({
         uid,
         ...userData,
@@ -223,21 +224,21 @@ export const pcsService = {
   async resetUserPermissions(userId) {
     try {
       const currentUser = auth.currentUser;
-      
+
       // Get user data to determine role
       const userData = await getData(`users/${userId}`);
       const userRole = userData?.role;
-      
+
       // Set default permissions based on role
       const defaultPermissions = this.getDefaultRolePermissions(userRole);
-      
+
       // Convert page paths to Firebase-safe keys
       const firebasePages = {};
       Object.entries(defaultPermissions).forEach(([pagePath, value]) => {
         const firebaseKey = formatPathForFirebase(pagePath);
         firebasePages[firebaseKey] = value;
       });
-      
+
       // Use setData to completely replace the permissions object
       await setData(`pcs/${userId}`, {
         pages: firebasePages,
@@ -371,20 +372,20 @@ export const pcsService = {
   async initializeUserPermissions(userId, role) {
     try {
       const currentUser = auth.currentUser;
-      
+
       // Initialize with role-specific permissions
       // Admin can later modify these through PCS
-      const defaultPermissions = role === 'Admin' 
+      const defaultPermissions = role === 'Admin'
         ? this.getDefaultRolePermissions(role)
         : this.getDefaultRolePermissions(role);
-      
+
       // Convert page paths to Firebase-safe keys
       const firebasePages = {};
       Object.entries(defaultPermissions).forEach(([pagePath, value]) => {
         const firebaseKey = formatPathForFirebase(pagePath);
         firebasePages[firebaseKey] = value;
       });
-      
+
       const permissionData = {
         pages: firebasePages,
         initializedAt: Date.now(),
@@ -392,7 +393,7 @@ export const pcsService = {
         role: role,
         note: role === 'Admin' ? 'Full access granted' : 'Role-based default permissions - Admin can modify via PCS'
       };
-      
+
       await setData(`pcs/${userId}`, permissionData);
       return permissionData;
     } catch (error) {
@@ -404,7 +405,7 @@ export const pcsService = {
   async ensurePCSEntry(userId, role) {
     try {
       const existingPermissions = await getData(`pcs/${userId}`);
-      
+
       if (!existingPermissions) {
         // Create initial PCS entry
         await this.initializeUserPermissions(userId, role);
@@ -415,7 +416,7 @@ export const pcsService = {
         }
         return newData;
       }
-      
+
       // Convert Firebase keys back to page paths
       if (existingPermissions?.pages) {
         existingPermissions.pages = this.convertFirebaseKeysToPermissions(existingPermissions.pages);
@@ -430,7 +431,7 @@ export const pcsService = {
         role: role,
         note: 'Fallback initialization'
       };
-      
+
       try {
         // Convert to Firebase-safe keys before saving
         const firebasePages = {};
@@ -438,7 +439,7 @@ export const pcsService = {
           const firebaseKey = formatPathForFirebase(pagePath);
           firebasePages[firebaseKey] = value;
         });
-        
+
         await setData(`pcs/${userId}`, {
           ...fallbackData,
           pages: firebasePages
@@ -456,7 +457,7 @@ export const pcsService = {
     try {
       const currentUser = auth.currentUser;
       const timestamp = Date.now();
-      
+
       // Process updates one by one to ensure proper Firebase handling
       for (const { userId, permissions } of updates) {
         // Convert page paths to Firebase-safe keys
@@ -466,16 +467,16 @@ export const pcsService = {
           const firebaseKey = formatPathForFirebase(pagePath);
           firebasePages[firebaseKey] = value;
         });
-        
+
         const permissionData = {
           pages: firebasePages,
           updatedAt: timestamp,
           updatedBy: currentUser?.uid
         };
-        
+
         await updateData(`pcs/${userId}`, permissionData);
       }
-      
+
       return true;
     } catch (error) {
       throw new Error(`Failed to bulk update permissions: ${error.message}`);
