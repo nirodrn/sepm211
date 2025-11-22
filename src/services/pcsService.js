@@ -84,6 +84,7 @@ export const pcsService = {
       { path: '/finished-goods/claim-dispatches', name: 'Claim Dispatches', category: 'Finished Goods', description: 'Claim dispatches from packing' },
       { path: '/finished-goods/direct-shop-requests', name: 'Direct Shop Requests', category: 'Finished Goods', description: 'Process direct shop requests' },
       { path: '/finished-goods/pricing', name: 'Product Pricing', category: 'Finished Goods', description: 'Manage product prices' },
+      { path: '/finished-goods/add-products-pricing', name: 'Add Products & Pricing', category: 'Finished Goods', description: 'Bulk upload finished goods products and prices via Excel' },
       { path: '/finished-goods/external-dispatches', name: 'External Dispatches', category: 'Finished Goods', description: 'Track external dispatches' },
       
       // Additional FG Store Pages
@@ -318,6 +319,7 @@ export const pcsService = {
         '/finished-goods/claim-dispatches': true,
         '/finished-goods/direct-shop-requests': true,
         '/finished-goods/pricing': true,
+        '/finished-goods/add-products-pricing': true,
         '/finished-goods/external-dispatches': true,
         '/finished-goods/price-history': true,
         '/finished-goods/dispatch-tracking': true,

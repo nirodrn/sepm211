@@ -604,6 +604,13 @@ const FGInventory = () => {
           </div>
           <div className="flex items-center space-x-3">
             <button
+              onClick={() => navigate('/finished-goods/add-products-pricing')}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Products & Pricing</span>
+            </button>
+            <button
               onClick={() => navigate('/finished-goods/claim-dispatches')}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
             >

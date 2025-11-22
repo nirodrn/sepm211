@@ -14,7 +14,8 @@ import {
   Eye,
   ArrowLeft,
   BarChart3,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import { fgPricingService } from '../../services/fgPricingService';
 import { fgStoreService } from '../../services/fgStoreService';
@@ -44,32 +45,81 @@ const PriceHistory = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [historyData, bulkInventory, packagedInventory, productionProducts] = await Promise.all([
+      const [historyData, bulkInventory, packagedInventory, productionProducts, allPricing] = await Promise.all([
         fgPricingService.getAllPriceHistory(),
         fgStoreService.getInventory(),
         fgStoreService.getPackagedInventory(),
-        getData('productionProducts')
+        getData('productionProducts'),
+        fgPricingService.getAllProductPricing()
       ]);
       
-      // Get unique products from all sources
-      const allProducts = new Set();
+      // Create a mapping of productId to productName from all sources
+      const productIdToName = new Map();
       
-      // From inventory
-      bulkInventory.forEach(item => allProducts.add(item.productName));
-      packagedInventory.forEach(item => allProducts.add(item.productName));
+      // From bulk inventory
+      bulkInventory.forEach(item => {
+        if (item.productId && item.productName) {
+          productIdToName.set(item.productId, item.productName);
+        }
+      });
       
-      // From production
+      // From packaged inventory
+      packagedInventory.forEach(item => {
+        if (item.productId && item.productName) {
+          productIdToName.set(item.productId, item.productName);
+        }
+      });
+      
+      // From production products
       if (productionProducts) {
-        Object.values(productionProducts).forEach(product => allProducts.add(product.name));
+        Object.entries(productionProducts).forEach(([id, product]) => {
+          if (id && product.name) {
+            productIdToName.set(id, product.name);
+          }
+        });
       }
       
-      // From price history
-      historyData.forEach(history => {
+      // From pricing data (which has productId and sometimes productName)
+      if (allPricing) {
+        allPricing.forEach(pricing => {
+          if (pricing.productId) {
+            if (pricing.productName) {
+              productIdToName.set(pricing.productId, pricing.productName);
+            }
+          }
+        });
+      }
+      
+      // Enrich price history with product names
+      const enrichedHistory = historyData.map(history => {
+        if (!history.productName && history.productId) {
+          // Try to find product name from mapping
+          const productName = productIdToName.get(history.productId);
+          if (productName) {
+            return { ...history, productName };
+          }
+          
+          // If productId contains variant separator, try base productId
+          if (history.productId.includes('_')) {
+            const baseProductId = history.productId.split('_')[0];
+            const baseProductName = productIdToName.get(baseProductId);
+            if (baseProductName) {
+              return { ...history, productName: baseProductName };
+            }
+          }
+        }
+        return history;
+      });
+      
+      // Get unique products from all sources for filter dropdown
+      const allProducts = new Set();
+      productIdToName.forEach(name => allProducts.add(name));
+      enrichedHistory.forEach(history => {
         if (history.productName) allProducts.add(history.productName);
       });
       
       setProducts(Array.from(allProducts).sort());
-      setPriceHistory(historyData);
+      setPriceHistory(enrichedHistory);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -80,6 +130,10 @@ const PriceHistory = () => {
   const handleViewProductAnalytics = async (productId) => {
     try {
       const analytics = await fgPricingService.getPricingAnalytics(productId);
+      if (!analytics) {
+        setError('No analytics data available for this product');
+        return;
+      }
       setSelectedProductAnalytics(analytics);
       setShowAnalytics(true);
     } catch (error) {
@@ -87,40 +141,22 @@ const PriceHistory = () => {
     }
   };
 
-  const exportToExcel = () => {
-    const exportData = filteredHistory.map(history => ({
-      'Date': new Date(history.timestamp).toLocaleDateString(),
-      'Product': history.productName || 'Unknown',
-      'Previous Price': `LKR ${(history.previousPrice || 0).toFixed(2)}`,
-      'New Price': `LKR ${(history.newPrice || 0).toFixed(2)}`,
-      'Change Amount': `LKR ${Math.abs((history.newPrice || 0) - (history.previousPrice || 0)).toFixed(2)}`,
-      'Change Percentage': `${fgPricingService.calculatePriceChange(history.previousPrice, history.newPrice).toFixed(1)}%`,
-      'Change Type': (history.newPrice || 0) >= (history.previousPrice || 0) ? 'Increase' : 'Decrease',
-      'Reason': history.changeReason || 'Not specified',
-      'Changed By': history.changedByName || 'Unknown',
-      'Effective Date': history.effectiveDate ? new Date(history.effectiveDate).toLocaleDateString() : 'N/A'
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Price History');
-    
-    XLSX.writeFile(workbook, `price-history-${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
   const filteredHistory = priceHistory.filter(history => {
-    const matchesSearch = (history.productName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const productName = history.productName || history.productId || 'Unknown Product';
+    const matchesSearch = productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (history.productId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (history.changeReason || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (history.changedByName || '').toLowerCase().includes(searchTerm.toLowerCase());
+                         (history.changedByName || history.recordedByName || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesProduct = !filterProduct || (history.productName || '').includes(filterProduct);
+    const matchesProduct = !filterProduct || productName.includes(filterProduct);
     
-    const matchesDateFrom = !filterDateFrom || history.timestamp >= new Date(filterDateFrom).getTime();
-    const matchesDateTo = !filterDateTo || history.timestamp <= new Date(filterDateTo).getTime();
+    const timestamp = history.timestamp || history.recordedAt || 0;
+    const matchesDateFrom = !filterDateFrom || timestamp >= new Date(filterDateFrom).getTime();
+    const matchesDateTo = !filterDateTo || timestamp <= new Date(filterDateTo).getTime() + (24 * 60 * 60 * 1000); // Add 1 day to include end date
     
     let matchesChangeType = true;
     if (filterChangeType) {
-      const priceChange = fgPricingService.calculatePriceChange(history.previousPrice, history.newPrice);
+      const priceChange = fgPricingService.calculatePriceChange(history.previousPrice || 0, history.newPrice || 0);
       if (filterChangeType === 'increase') {
         matchesChangeType = priceChange > 0;
       } else if (filterChangeType === 'decrease') {
@@ -130,6 +166,43 @@ const PriceHistory = () => {
     
     return matchesSearch && matchesProduct && matchesDateFrom && matchesDateTo && matchesChangeType;
   });
+
+  const exportToExcel = () => {
+    if (!filteredHistory || filteredHistory.length === 0) {
+      setError('No data to export');
+      return;
+    }
+    
+    const exportData = filteredHistory.map(history => {
+      const timestamp = history.timestamp || history.recordedAt || Date.now();
+      const productName = history.productName || history.productId || 'Unknown Product';
+      const previousPrice = history.previousPrice || 0;
+      const newPrice = history.newPrice || 0;
+      const changeAmount = Math.abs(newPrice - previousPrice);
+      const changePercentage = fgPricingService.calculatePriceChange(previousPrice, newPrice);
+      
+      return {
+        'Date': new Date(timestamp).toLocaleDateString(),
+        'Time': new Date(timestamp).toLocaleTimeString(),
+        'Product ID': history.productId || 'N/A',
+        'Product Name': productName,
+        'Previous Price': `LKR ${previousPrice.toFixed(2)}`,
+        'New Price': `LKR ${newPrice.toFixed(2)}`,
+        'Change Amount': `LKR ${changeAmount.toFixed(2)}`,
+        'Change Percentage': `${changePercentage.toFixed(1)}%`,
+        'Change Type': newPrice >= previousPrice ? 'Increase' : 'Decrease',
+        'Reason': history.changeReason || 'Not specified',
+        'Changed By': history.changedByName || history.recordedByName || 'Unknown',
+        'Effective Date': history.effectiveDate ? new Date(history.effectiveDate).toLocaleDateString() : 'Immediate'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Price History');
+    
+    XLSX.writeFile(workbook, `price-history-${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   const calculateSummaryStats = () => {
     const totalChanges = filteredHistory.length;
@@ -464,10 +537,10 @@ const PriceHistory = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
-                          {formatDate(history.timestamp)}
+                          {formatDate(history.timestamp || history.recordedAt || Date.now())}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {new Date(history.timestamp).toLocaleTimeString()}
+                          {new Date(history.timestamp || history.recordedAt || Date.now()).toLocaleTimeString()}
                         </div>
                       </div>
                     </td>
@@ -476,11 +549,13 @@ const PriceHistory = () => {
                         <Package className="h-4 w-4 text-gray-400" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {history.productName || 'Unknown Product'}
+                            {history.productName || history.productId || 'Unknown Product'}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            ID: {history.productId}
-                          </div>
+                          {history.productId && (
+                            <div className="text-sm text-gray-500">
+                              ID: {history.productId}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -521,10 +596,10 @@ const PriceHistory = () => {
                         <User className="h-4 w-4 text-gray-400" />
                         <div>
                           <div className="text-sm text-gray-900">
-                            {history.changedByName || 'Unknown User'}
+                            {history.changedByName || history.recordedByName || 'Unknown User'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {formatDate(history.recordedAt || history.timestamp)}
+                            {formatDate(history.recordedAt || history.timestamp || Date.now())}
                           </div>
                         </div>
                       </div>
@@ -535,13 +610,15 @@ const PriceHistory = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleViewProductAnalytics(history.productId)}
-                        className="text-blue-600 hover:text-blue-900 p-1 rounded"
-                        title="View Product Analytics"
-                      >
-                        <BarChart3 className="h-4 w-4" />
-                      </button>
+                      {history.productId && (
+                        <button
+                          onClick={() => handleViewProductAnalytics(history.productId)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                          title="View Product Analytics"
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
